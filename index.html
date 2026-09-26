@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>花光光收單系統</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, "PingFang TC", "Noto Sans TC", sans-serif;
+      background: #fff;
+      color: #000;
+      line-height: 1.7;
+      padding: 0 16px;
+    }
+
+    .serif { font-family: "Noto Serif TC", "Songti TC", serif; }
+
+    main { max-width: 560px; margin: 0 auto; padding: 48px 0 64px; }
+
+    /* 頁首 */
+    .top {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      letter-spacing: 0.2em;
+      padding-bottom: 12px;
+      border-bottom: 1px solid #000;
+    }
+
+    .hero { text-align: center; padding: 48px 0 40px; }
+    .hero svg { width: 96px; height: 120px; margin-bottom: 20px; }
+    .hero .en { font-size: 12px; letter-spacing: 0.4em; color: #666; margin-bottom: 8px; }
+    .hero h1 { font-size: 32px; font-weight: 600; letter-spacing: 0.2em; margin-bottom: 16px; }
+    .hero p { font-size: 15px; color: #333; max-width: 420px; margin: 0 auto; }
+
+    /* 流程說明 */
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      border-top: 1px solid #000;
+      border-bottom: 1px solid #000;
+      margin-bottom: 48px;
+    }
+    .step { padding: 20px 12px; text-align: center; }
+    .step + .step { border-left: 1px solid #000; }
+    .step .num { font-size: 22px; line-height: 1; margin-bottom: 8px; }
+    .step h3 { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+    .step p { font-size: 12px; color: #666; line-height: 1.5; }
+
+    /* 表單卡 */
+    .card { border: 1px solid #000; padding: 32px 28px; position: relative; background: #fff; }
+    .card::before {
+      content: "";
+      position: absolute;
+      inset: 6px -7px -7px 6px;
+      border: 1px solid #000;
+      z-index: -1;
+    }
+    .card h2 { font-size: 20px; font-weight: 600; margin-bottom: 4px; }
+    .card .sub { font-size: 13px; color: #666; margin-bottom: 28px; }
+
+    .group-title {
+      font-size: 12px;
+      letter-spacing: 0.2em;
+      color: #666;
+      margin: 12px 0 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .group-title::after { content: ""; flex: 1; border-top: 1px solid #ddd; }
+
+    .field { margin-bottom: 20px; }
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    @media (max-width: 480px) { .row { grid-template-columns: 1fr; gap: 0; } }
+
+    label, .label { display: block; font-size: 14px; margin-bottom: 4px; }
+    label span, .label span { font-size: 12px; color: #666; margin-left: 6px; }
+
+    input[type="text"], input[type="tel"], input[type="number"],
+    input[type="date"], input[type="time"], textarea {
+      width: 100%;
+      padding: 10px 0;
+      font-size: 17px;
+      font-family: inherit;
+      color: #000;
+      border: none;
+      border-bottom: 1px solid #000;
+      border-radius: 0;
+      background: transparent;
+      outline: none;
+      appearance: none;
+      min-height: 46px;
+    }
+    textarea {
+      border: 1px solid #000;
+      padding: 10px 12px;
+      margin-top: 6px;
+      resize: vertical;
+      min-height: 110px;
+      font-size: 15px;
+    }
+    input::placeholder, textarea::placeholder { color: #bbb; }
+    input:focus { border-bottom-width: 2px; padding-bottom: 9px; }
+    textarea:focus { outline: 1px solid #000; }
+    .invalid { border-bottom: 2px dashed #000 !important; }
+    textarea.invalid { border: 2px dashed #000 !important; }
+
+    .budget { position: relative; }
+    .budget::before {
+      content: "NT$";
+      position: absolute;
+      left: 0;
+      bottom: 12px;
+      font-size: 15px;
+    }
+    .budget input { padding-left: 40px; }
+
+    .hint { font-size: 12px; color: #666; margin-top: 4px; }
+    .error { font-size: 12px; font-weight: 600; margin-top: 4px; }
+    .error:empty { display: none; }
+
+    /* 圖片上傳 */
+    .upload {
+      margin-top: 6px;
+      border: 1px dashed #000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 4px;
+      min-height: 120px;
+      padding: 16px;
+      cursor: pointer;
+      text-align: center;
+      font-size: 14px;
+      transition: background .2s;
+    }
+    .upload:hover, .upload.drag { background: #f5f5f5; }
+    .upload small { color: #666; font-size: 12px; }
+    .upload input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+    .upload:focus-within { outline: 2px solid #000; outline-offset: 2px; }
+    .upload.invalid { border: 2px dashed #000; }
+
+    .preview {
+      margin-top: 6px;
+      border: 1px solid #000;
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      padding: 10px;
+    }
+    .preview img { width: 72px; height: 72px; object-fit: cover; display: block; }
+    .preview div { flex: 1; min-width: 0; font-size: 13px; }
+    .preview p { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .preview small { color: #666; }
+    .link { background: none; border: none; font: inherit; font-size: 13px; text-decoration: underline; cursor: pointer; color: #000; }
+
+    .submit {
+      margin-top: 12px;
+      width: 100%;
+      padding: 16px;
+      font-size: 15px;
+      letter-spacing: 0.3em;
+      font-family: inherit;
+      background: #000;
+      color: #fff;
+      border: 1px solid #000;
+      cursor: pointer;
+      transition: background .2s, color .2s;
+    }
+    .submit:hover { background: #fff; color: #000; }
+    .submit:focus-visible { outline: 2px solid #000; outline-offset: 3px; }
+    .submit:disabled { opacity: .5; cursor: wait; }
+
+    .form-error { margin-top: 12px; text-align: center; }
+    .privacy { font-size: 12px; color: #666; margin-top: 16px; text-align: center; }
+
+    /* 送出成功 */
+    .done { text-align: center; padding: 8px 0; }
+    .done .mark {
+      width: 56px; height: 56px;
+      border: 1px solid #000;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      margin: 0 auto 20px;
+      font-size: 24px;
+    }
+    .done h2 { margin-bottom: 8px; }
+    .done > p { font-size: 14px; color: #333; }
+    .receipt { text-align: left; border-top: 1px solid #000; border-bottom: 1px solid #000; margin: 24px 0; padding: 12px 0; font-size: 14px; }
+    .receipt div { display: flex; justify-content: space-between; gap: 16px; padding: 4px 0; }
+    .receipt span:first-child { color: #666; flex-shrink: 0; }
+    .receipt span:last-child { text-align: right; word-break: break-all; }
+    .done .submit { background: #fff; color: #000; }
+    .done .submit:hover { background: #000; color: #fff; }
+
+    footer {
+      text-align: center;
+      font-size: 12px;
+      color: #666;
+      padding: 24px 0 40px;
+      border-top: 1px solid #000;
+      max-width: 560px;
+      margin: 0 auto;
+      letter-spacing: 0.1em;
+    }
+
+    @media (max-width: 480px) {
+      .hero h1 { font-size: 24px; letter-spacing: 0.12em; }
+      .card { padding: 28px 20px; }
+      .step { padding: 16px 6px; }
+    }
+
+    [hidden] { display: none !important; }
+  </style>
+</head>
+<body>
+  <main>
+    <div class="top">
+      <span>HUA GUANG GUANG</span>
+      <span>CUSTOM ORDER</span>
+    </div>
+
+    <section class="hero">
+      <!-- 線條花朵插圖 -->
+      <svg viewBox="0 0 96 120" fill="none" stroke="#000" stroke-width="1.2" aria-hidden="true">
+        <path d="M48 58 V116" />
+        <path d="M48 92 C36 88 28 78 26 68 C38 70 46 80 48 92" />
+        <path d="M48 82 C58 78 66 70 68 60 C58 62 50 70 48 82" />
+        <ellipse cx="48" cy="22" rx="10" ry="18" />
+        <ellipse cx="48" cy="22" rx="10" ry="18" transform="rotate(60 48 40)" />
+        <ellipse cx="48" cy="22" rx="10" ry="18" transform="rotate(-60 48 40)" />
+        <ellipse cx="48" cy="22" rx="10" ry="18" transform="rotate(120 48 40)" />
+        <ellipse cx="48" cy="22" rx="10" ry="18" transform="rotate(-120 48 40)" />
+        <circle cx="48" cy="40" r="6" fill="#fff" />
+      </svg>
+      <p class="en">CUSTOM · FLOWERS</p>
+      <h1 class="serif">花光光收單系統</h1>
+      <p>每一份花禮都是全客製化設計。<br>告訴我們您想要的樣子、預算與面交時間，花藝師會親自與您聯繫。</p>
+    </section>
+
+    <section class="steps" aria-label="訂購流程">
+      <div class="step">
+        <div class="num serif">01</div>
+        <h3>填寫需求</h3>
+        <p>風格、預算<br>與面交時間</p>
+      </div>
+      <div class="step">
+        <div class="num serif">02</div>
+        <h3>確認與匯款</h3>
+        <p>花藝師聯繫您<br>確認細節</p>
+      </div>
+      <div class="step">
+        <div class="num serif">03</div>
+        <h3>面交取花</h3>
+        <p>收款後開始製作<br>約定時間交付</p>
+      </div>
+    </section>
+
+    <section class="card">
+      <form id="order-form" novalidate>
+        <h2 class="serif">客製化需求單</h2>
+        <p class="sub">標示「必填」的欄位請務必填寫，其他細節我們會再與您確認。</p>
+
+        <p class="group-title">聯絡資料</p>
+        <div class="row">
+          <div class="field">
+            <label for="name">姓名<span>必填</span></label>
+            <input id="name" type="text" autocomplete="name" maxlength="30" placeholder="王小花">
+            <p class="error"></p>
+          </div>
+          <div class="field">
+            <label for="phone">電話<span>必填</span></label>
+            <input id="phone" type="tel" autocomplete="tel" maxlength="20" placeholder="0912345678">
+            <p class="error"></p>
+          </div>
+        </div>
+
+        <p class="group-title">面交資訊</p>
+        <div class="row">
+          <div class="field">
+            <label for="date">面交日期<span>必填</span></label>
+            <input id="date" type="date">
+            <p class="error"></p>
+          </div>
+          <div class="field">
+            <label for="time">面交時間<span>必填</span></label>
+            <input id="time" type="time" step="900">
+            <p class="error"></p>
+          </div>
+        </div>
+        <div class="field">
+          <label for="location">面交地點<span>必填</span></label>
+          <input id="location" type="text" maxlength="100" placeholder="例如：捷運忠孝復興站 2 號出口">
+          <p class="error"></p>
+        </div>
+
+        <p class="group-title">花禮需求</p>
+        <div class="field">
+          <label for="budget">預算<span>必填</span></label>
+          <div class="budget">
+            <input id="budget" type="number" inputmode="numeric" min="1" max="1000000" step="1" placeholder="1500">
+          </div>
+          <p class="error"></p>
+        </div>
+        <div class="field">
+          <label for="style">風格描述</label>
+          <textarea id="style" maxlength="500" placeholder="例如：送給媽媽的生日花束，喜歡粉色、柔和的感覺，不要太誇張"></textarea>
+          <p class="hint"><span id="style-count">0</span> / 500 字</p>
+        </div>
+        <div class="field">
+          <span class="label">參考圖片<span>選填・限 1 張</span></span>
+          <label class="upload" id="upload">
+            <input id="image" type="file" accept="image/jpeg,image/png,image/webp,image/gif,image/heic">
+            <strong>點擊選擇圖片</strong>
+            <small>或將圖片拖曳到這裡・JPG / PNG / WEBP・5MB 以內</small>
+          </label>
+          <div class="preview" id="preview" hidden>
+            <img id="preview-img" alt="參考圖片預覽">
+            <div>
+              <p id="preview-name"></p>
+              <small id="preview-size"></small>
+            </div>
+            <button type="button" class="link" id="remove-image">移除</button>
+          </div>
+          <p class="error"></p>
+        </div>
+
+        <button type="submit" class="submit" id="submit">送出需求</button>
+        <p class="error form-error" id="form-error" role="alert"></p>
+        <p class="privacy">您的資料僅用於本次訂單聯繫，不會公開顯示</p>
+      </form>
+
+      <div class="done" id="done" hidden>
+        <div class="mark">✓</div>
+        <h2 class="serif">謝謝您，<span id="done-name"></span></h2>
+        <p>需求已送出！<br>花藝師會盡快致電與您確認細節與匯款方式，確認收款後即開始製作。</p>
+        <div class="receipt" id="receipt"></div>
+        <button type="button" class="submit" id="again">再填一筆</button>
+      </div>
+    </section>
+  </main>
+
+  <footer>© 花光光收單系統</footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    /* ---------- Supabase 設定（publishable key 可公開放在前端） ---------- */
+    const SUPABASE_URL = 'https://kkwmdlxcarjxmzfdapgc.supabase.co';
+    const SUPABASE_KEY = 'sb_publishable_5aJxvibVGip7mJpf5MVB4w_Q_-LbuJ1';
+    const TABLE = 'flower_orders';
+    const BUCKET = 'order-images';
+    const MAX_IMAGE = 5 * 1024 * 1024;
+    const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    const $ = (id) => document.getElementById(id);
+    const form = $('order-form');
+    let imageFile = null;
+
+    /* ---------- 小工具 ---------- */
+    const pad = (n) => String(n).padStart(2, '0');
+    const toDateInput = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+    const money = (n) => 'NT$' + Number(n).toLocaleString('zh-TW');
+    const fileSize = (b) => b > 1024 * 1024 ? (b / 1024 / 1024).toFixed(1) + ' MB' : Math.ceil(b / 1024) + ' KB';
+
+    // 面交日期最早為明天
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    $('date').min = toDateInput(tomorrow);
+
+    /* ---------- 錯誤訊息 ---------- */
+    function setError(el, msg) {
+      const errorEl = el.closest('.field')?.querySelector('.error');
+      if (!errorEl) return;
+      errorEl.textContent = msg;
+      (el.id === 'image' ? $('upload') : el).classList.toggle('invalid', !!msg);
+    }
+    form.addEventListener('input', (e) => {
+      if (e.target.closest('.field')) setError(e.target, '');
+      if (e.target.id === 'style') $('style-count').textContent = e.target.value.length;
+      $('form-error').textContent = '';
+    });
+
+    /* ---------- 圖片 ---------- */
+    function pickImage(file) {
+      setError($('image'), '');
+      if (!file) return;
+      if (!file.type.startsWith('image/')) return setError($('image'), '請選擇圖片檔');
+      if (file.size > MAX_IMAGE) return setError($('image'), '圖片需在 5MB 以內');
+      imageFile = file;
+      $('preview-img').src = URL.createObjectURL(file);
+      $('preview-name').textContent = file.name;
+      $('preview-size').textContent = fileSize(file.size);
+      $('upload').hidden = true;
+      $('preview').hidden = false;
+    }
+    function clearImage() {
+      if ($('preview-img').src) URL.revokeObjectURL($('preview-img').src);
+      imageFile = null;
+      $('image').value = '';
+      $('preview-img').removeAttribute('src');
+      $('preview').hidden = true;
+      $('upload').hidden = false;
+    }
+    $('image').addEventListener('change', (e) => pickImage(e.target.files[0]));
+    $('remove-image').addEventListener('click', clearImage);
+    ['dragenter', 'dragover'].forEach((t) => $('upload').addEventListener(t, (e) => {
+      e.preventDefault();
+      $('upload').classList.add('drag');
+    }));
+    ['dragleave', 'drop'].forEach((t) => $('upload').addEventListener(t, () => $('upload').classList.remove('drag')));
+    $('upload').addEventListener('drop', (e) => {
+      e.preventDefault();
+      pickImage(e.dataTransfer.files[0]);
+    });
+
+    /* ---------- 驗證 ---------- */
+    function validate() {
+      let first = null;
+      const fail = (el, msg) => { setError(el, msg); first ||= el; };
+      const v = (id) => $(id).value.trim();
+
+      if (!v('name')) fail($('name'), '請填寫姓名');
+      if (!/^0\d{8,9}$/.test(v('phone').replace(/[-\s]/g, ''))) fail($('phone'), '請填寫正確的電話，例如 0912345678');
+      if (!v('date')) fail($('date'), '請選擇面交日期');
+      else if (v('date') < $('date').min) fail($('date'), '面交日期最早為明天');
+      if (!v('time')) fail($('time'), '請選擇面交時間');
+      if (!v('location')) fail($('location'), '請填寫面交地點');
+      const budget = Number(v('budget'));
+      if (!Number.isInteger(budget) || budget < 1 || budget > 1000000) fail($('budget'), '請填寫預算金額（整數）');
+
+      if (first) first.focus();
+      return !first;
+    }
+
+    /* ---------- 送出 ---------- */
+    async function uploadImage(file) {
+      const ext = (file.name.split('.').pop() || 'jpg').toLowerCase().replace(/[^a-z0-9]/g, '');
+      const path = `${toDateInput(new Date())}/${crypto.randomUUID()}.${ext}`;
+      const { error } = await db.storage.from(BUCKET).upload(path, file, { contentType: file.type });
+      if (error) throw error;
+      return path;
+    }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      $('form-error').textContent = '';
+      if (!validate()) return;
+
+      const btn = $('submit');
+      btn.disabled = true;
+      btn.textContent = '送出中…';
+
+      try {
+        const order = {
+          customer_name: $('name').value.trim(),
+          phone: $('phone').value.replace(/[-\s]/g, ''),
+          meet_at: new Date(`${$('date').value}T${$('time').value}`).toISOString(),
+          meet_location: $('location').value.trim(),
+          budget: Number($('budget').value),
+          style_note: $('style').value.trim() || null,
+          image_path: imageFile ? await uploadImage(imageFile) : null,
+        };
+        const { error } = await db.from(TABLE).insert(order);
+        if (error) throw error;
+        showDone(order);
+      } catch (err) {
+        console.error(err);
+        $('form-error').textContent = '送出失敗，請確認網路連線後再試一次';
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '送出需求';
+      }
+    });
+
+    function showDone(o) {
+      $('done-name').textContent = o.customer_name;
+      const when = new Date(o.meet_at).toLocaleString('zh-TW', {
+        month: 'long', day: 'numeric', weekday: 'short', hour: '2-digit', minute: '2-digit',
+      });
+      const rows = [
+        ['電話', o.phone],
+        ['面交時間', when],
+        ['面交地點', o.meet_location],
+        ['預算', money(o.budget)],
+        ['參考圖片', o.image_path ? '已上傳 1 張' : '無'],
+      ];
+      $('receipt').innerHTML = '';
+      rows.forEach(([k, v]) => {
+        const div = document.createElement('div');
+        div.append(Object.assign(document.createElement('span'), { textContent: k }),
+                   Object.assign(document.createElement('span'), { textContent: v }));
+        $('receipt').appendChild(div);
+      });
+      form.hidden = true;
+      $('done').hidden = false;
+      $('done').scrollIntoView({ block: 'center' });
+    }
+
+    $('again').addEventListener('click', () => {
+      form.reset();
+      clearImage();
+      form.querySelectorAll('.error').forEach((p) => (p.textContent = ''));
+      form.querySelectorAll('.invalid').forEach((el) => el.classList.remove('invalid'));
+      $('style-count').textContent = 0;
+      $('done').hidden = true;
+      form.hidden = false;
+      $('name').focus();
+    });
+  </script>
+</body>
+</html>

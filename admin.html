@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex">
+  <title>訂單後台｜花光光收單系統</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, "PingFang TC", "Noto Sans TC", sans-serif;
+      background: #fff;
+      color: #000;
+      line-height: 1.6;
+      padding: 0 16px;
+    }
+    .serif { font-family: "Noto Serif TC", "Songti TC", serif; }
+    [hidden] { display: none !important; }
+
+    button { font: inherit; color: inherit; cursor: pointer; }
+    button:focus-visible, input:focus-visible, select:focus-visible { outline: 2px solid #000; outline-offset: 2px; }
+
+    .btn {
+      padding: 10px 16px;
+      background: #000;
+      color: #fff;
+      border: 1px solid #000;
+      letter-spacing: 0.1em;
+      transition: background .2s, color .2s;
+    }
+    .btn:hover { background: #fff; color: #000; }
+    .btn.ghost { background: #fff; color: #000; }
+    .btn.ghost:hover { background: #000; color: #fff; }
+    .btn:disabled { opacity: .5; cursor: wait; }
+
+    /* ---------- 登入 ---------- */
+    .login { max-width: 360px; margin: 12vh auto 0; }
+    .login .brand { font-size: 12px; letter-spacing: 0.3em; color: #666; margin-bottom: 8px; }
+    .login h1 { font-size: 26px; letter-spacing: 0.1em; margin-bottom: 32px; }
+    .login label { display: block; font-size: 14px; margin-bottom: 4px; }
+    .login input {
+      width: 100%;
+      padding: 10px 0;
+      font-size: 17px;
+      border: none;
+      border-bottom: 1px solid #000;
+      border-radius: 0;
+      outline: none;
+      margin-bottom: 20px;
+      background: transparent;
+    }
+    .login input:focus { border-bottom-width: 2px; padding-bottom: 9px; }
+    .login .btn { width: 100%; padding: 14px; margin-top: 8px; }
+    .login .error { font-size: 13px; font-weight: 600; margin-top: 12px; min-height: 1.6em; }
+    .login .back { display: block; text-align: center; margin-top: 24px; font-size: 13px; color: #666; }
+
+    /* ---------- 後台 ---------- */
+    .app { max-width: 1120px; margin: 0 auto; padding: 24px 0 64px; }
+    .bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      padding-bottom: 12px;
+      border-bottom: 2px solid #000;
+      margin-bottom: 24px;
+    }
+    .bar h1 { font-size: 20px; letter-spacing: 0.1em; }
+    .bar h1 small { font-family: -apple-system, sans-serif; font-size: 12px; font-weight: 400; color: #666; letter-spacing: 0.1em; margin-left: 8px; }
+    .bar .who { display: flex; align-items: center; gap: 12px; font-size: 13px; color: #666; }
+    .bar .btn { padding: 6px 12px; font-size: 13px; }
+
+    .stats { display: grid; grid-template-columns: repeat(4, 1fr); border: 1px solid #000; margin-bottom: 24px; }
+    .stat { padding: 14px 16px; }
+    .stat + .stat { border-left: 1px solid #000; }
+    .stat p { font-size: 12px; color: #666; letter-spacing: 0.1em; }
+    .stat strong { font-size: 22px; font-weight: 600; }
+
+    .layout { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); gap: 24px; align-items: start; }
+
+    /* 月曆 */
+    .cal-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+    .cal-head h2 { font-size: 22px; letter-spacing: 0.05em; }
+    .cal-nav { display: flex; gap: 6px; }
+    .cal-nav button { border: 1px solid #000; background: #fff; padding: 4px 12px; font-size: 14px; }
+    .cal-nav button:hover { background: #000; color: #fff; }
+
+    .cal { display: grid; grid-template-columns: repeat(7, 1fr); border-top: 1px solid #000; border-left: 1px solid #000; }
+    .cal .dow {
+      font-size: 12px;
+      text-align: center;
+      padding: 6px 0;
+      border-right: 1px solid #000;
+      border-bottom: 1px solid #000;
+      letter-spacing: 0.1em;
+      background: #000;
+      color: #fff;
+    }
+    .day {
+      min-height: 96px;
+      border: none;
+      border-right: 1px solid #000;
+      border-bottom: 1px solid #000;
+      background: #fff;
+      padding: 6px 8px;
+      text-align: left;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .day:hover { background: #f5f5f5; }
+    .day.other { color: #bbb; }
+    .day .d { font-size: 13px; }
+    .day.today .d {
+      background: #000;
+      color: #fff;
+      width: 22px; height: 22px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      font-size: 12px;
+    }
+    .day .n { margin-top: auto; font-size: 12px; font-weight: 600; }
+    .day .sum { font-size: 12px; color: #444; }
+    .day.has { background: repeating-linear-gradient(135deg, #fff 0 6px, #f3f3f3 6px 7px); }
+    .day.selected { outline: 2px solid #000; outline-offset: -3px; }
+
+    /* 當日列表 */
+    .panel { border: 1px solid #000; }
+    .panel-head { padding: 14px 16px; border-bottom: 1px solid #000; }
+    .panel-head h3 { font-size: 16px; }
+    .panel-head p { font-size: 13px; color: #666; }
+    .empty { padding: 32px 16px; text-align: center; color: #888; font-size: 14px; }
+
+    .order { border-bottom: 1px solid #ddd; }
+    .order:last-child { border-bottom: none; }
+    .order-sum {
+      width: 100%;
+      background: #fff;
+      border: none;
+      padding: 12px 16px;
+      text-align: left;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 4px 12px;
+      align-items: center;
+    }
+    .order-sum:hover { background: #f5f5f5; }
+    .order-sum .time { font-weight: 600; font-size: 15px; }
+    .order-sum .name { font-size: 15px; }
+    .order-sum .money { font-size: 14px; text-align: right; }
+    .order-sum .brief { grid-column: 1 / -1; font-size: 13px; color: #666; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+    .badge { font-size: 11px; padding: 1px 8px; border: 1px solid #000; white-space: nowrap; letter-spacing: 0.05em; }
+    .s-待確認 { background: #fff; }
+    .s-客人已付款 { background: #fff; border-width: 2px; font-weight: 600; }
+    .s-製作中 { background: #ccc; }
+    .s-已完成 { background: #000; color: #fff; }
+
+    .detail { padding: 4px 16px 16px; font-size: 14px; }
+    .detail dl { display: grid; grid-template-columns: 72px 1fr; gap: 6px 12px; margin-bottom: 12px; }
+    .detail dt { color: #666; }
+    .detail dd { word-break: break-word; white-space: pre-wrap; }
+    .detail a { color: #000; }
+    .detail .img { display: block; width: 100%; max-height: 320px; object-fit: contain; border: 1px solid #ddd; background: #fafafa; margin-bottom: 12px; }
+    .status-row { display: flex; gap: 8px; align-items: center; }
+    .status-row label { font-size: 13px; color: #666; }
+    .status-row select {
+      flex: 1;
+      padding: 8px 32px 8px 10px;
+      font-size: 15px;
+      border: 1px solid #000;
+      border-radius: 0;
+      background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z'/%3E%3C/svg%3E") no-repeat right 12px center;
+      appearance: none;
+    }
+    .saved { font-size: 12px; color: #666; min-width: 4em; }
+
+    .legend { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; font-size: 12px; color: #666; align-items: center; }
+
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: 24px;
+      transform: translateX(-50%);
+      background: #000;
+      color: #fff;
+      padding: 10px 20px;
+      font-size: 14px;
+    }
+
+    @media (max-width: 860px) {
+      .layout { grid-template-columns: 1fr; }
+      .stats { grid-template-columns: repeat(2, 1fr); }
+      .stat:nth-child(3) { border-left: none; }
+      .stat:nth-child(n+3) { border-top: 1px solid #000; }
+    }
+    @media (max-width: 520px) {
+      .day { min-height: 64px; padding: 4px; }
+      .day .sum { display: none; }
+      .bar .who span { display: none; }
+      .cal-head h2 { font-size: 18px; }
+    }
+  </style>
+</head>
+<body>
+  <!-- 登入 -->
+  <section class="login" id="login" hidden>
+    <p class="brand">HUA GUANG GUANG · ADMIN</p>
+    <h1 class="serif">訂單後台登入</h1>
+    <form id="login-form">
+      <label for="email">Email</label>
+      <input id="email" type="email" autocomplete="username" required>
+      <label for="password">密碼</label>
+      <input id="password" type="password" autocomplete="current-password" required>
+      <button class="btn" id="login-btn">登入</button>
+      <p class="error" id="login-error" role="alert"></p>
+    </form>
+    <a class="back" href="./">← 回到前台需求單</a>
+  </section>
+
+  <!-- 後台 -->
+  <div class="app" id="app" hidden>
+    <header class="bar">
+      <h1 class="serif">花光光收單系統<small>訂單後台</small></h1>
+      <div class="who"><span id="who"></span><button class="btn ghost" id="logout">登出</button></div>
+    </header>
+
+    <section class="stats" aria-label="本月統計">
+      <div class="stat"><p>本月訂單</p><strong id="st-count">0</strong></div>
+      <div class="stat"><p>本月預算合計</p><strong id="st-sum">NT$0</strong></div>
+      <div class="stat"><p>待確認</p><strong id="st-pending">0</strong></div>
+      <div class="stat"><p>製作中</p><strong id="st-making">0</strong></div>
+    </section>
+
+    <div class="layout">
+      <section>
+        <div class="cal-head">
+          <h2 class="serif" id="month-title"></h2>
+          <div class="cal-nav">
+            <button id="prev" aria-label="上個月">‹</button>
+            <button id="today">今天</button>
+            <button id="next" aria-label="下個月">›</button>
+          </div>
+        </div>
+        <div class="cal" id="cal"></div>
+        <div class="legend">
+          狀態：<span class="badge s-待確認">待確認</span><span class="badge s-客人已付款">客人已付款</span><span class="badge s-製作中">製作中</span><span class="badge s-已完成">已完成</span>
+        </div>
+      </section>
+
+      <aside class="panel" aria-live="polite">
+        <div class="panel-head">
+          <h3 id="day-title"></h3>
+          <p id="day-sub"></p>
+        </div>
+        <div id="day-list"></div>
+      </aside>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" hidden></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    /* ---------- Supabase 設定 ---------- */
+    const SUPABASE_URL = 'https://kkwmdlxcarjxmzfdapgc.supabase.co';
+    const SUPABASE_KEY = 'sb_publishable_5aJxvibVGip7mJpf5MVB4w_Q_-LbuJ1';
+    const TABLE = 'flower_orders';
+    const BUCKET = 'order-images';
+    const STATUSES = ['待確認', '客人已付款', '製作中', '已完成'];
+    const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    const $ = (id) => document.getElementById(id);
+    const pad = (n) => String(n).padStart(2, '0');
+    const dayKey = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+    const money = (n) => 'NT$' + Number(n).toLocaleString('zh-TW');
+    const hm = (d) => `${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    const el = (tag, props = {}, ...children) => {
+      const node = Object.assign(document.createElement(tag), props);
+      node.append(...children);
+      return node;
+    };
+
+    let month = new Date();           // 目前顯示的月份
+    month.setDate(1);
+    let selected = dayKey(new Date()); // 選取的日期
+    let orders = [];                   // 本月訂單
+    let openId = null;                 // 展開中的訂單
+
+    function toast(msg) {
+      $('toast').textContent = msg;
+      $('toast').hidden = false;
+      clearTimeout(toast.t);
+      toast.t = setTimeout(() => ($('toast').hidden = true), 2000);
+    }
+
+    /* ---------- 登入 ---------- */
+    async function showScreen(session) {
+      if (!session) {
+        $('app').hidden = true;
+        $('login').hidden = false;
+        return;
+      }
+      const { data } = await db.from('admin_users').select('user_id').eq('user_id', session.user.id).maybeSingle();
+      if (!data) {
+        await db.auth.signOut();
+        $('login-error').textContent = '此帳號沒有後台權限';
+        return;
+      }
+      $('who').textContent = session.user.email;
+      $('login').hidden = true;
+      $('app').hidden = false;
+      loadMonth();
+    }
+
+    $('login-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      $('login-error').textContent = '';
+      $('login-btn').disabled = true;
+      const { data, error } = await db.auth.signInWithPassword({
+        email: $('email').value.trim(),
+        password: $('password').value,
+      });
+      $('login-btn').disabled = false;
+      if (error) {
+        $('login-error').textContent = 'Email 或密碼錯誤';
+        return;
+      }
+      $('password').value = '';
+      showScreen(data.session);
+    });
+
+    $('logout').addEventListener('click', async () => {
+      await db.auth.signOut();
+      orders = [];
+      showScreen(null);
+    });
+
+    /* ---------- 資料 ---------- */
+    async function loadMonth() {
+      const start = new Date(month.getFullYear(), month.getMonth(), 1);
+      const end = new Date(month.getFullYear(), month.getMonth() + 1, 1);
+      const { data, error } = await db
+        .from(TABLE)
+        .select('*')
+        .gte('meet_at', start.toISOString())
+        .lt('meet_at', end.toISOString())
+        .order('meet_at');
+      if (error) {
+        console.error(error);
+        toast('讀取訂單失敗，請重新整理');
+        return;
+      }
+      orders = data;
+      renderStats();
+      renderCalendar();
+      renderDay();
+    }
+
+    async function updateStatus(id, status, savedEl) {
+      savedEl.textContent = '儲存中…';
+      const { data, error } = await db.from(TABLE).update({ status }).eq('id', id).select('id, status').single();
+      if (error || !data) {
+        console.error(error);
+        savedEl.textContent = '';
+        toast('更新失敗，請再試一次');
+        renderDay();
+        return;
+      }
+      orders.find((o) => o.id === id).status = data.status;
+      toast(`已更新為「${data.status}」`);
+      renderStats();
+      renderCalendar();
+      renderDay();
+    }
+
+    /* ---------- 畫面 ---------- */
+    function renderStats() {
+      $('st-count').textContent = orders.length;
+      $('st-sum').textContent = money(orders.reduce((s, o) => s + o.budget, 0));
+      $('st-pending').textContent = orders.filter((o) => o.status === '待確認').length;
+      $('st-making').textContent = orders.filter((o) => o.status === '製作中').length;
+    }
+
+    function renderCalendar() {
+      $('month-title').textContent = `${month.getFullYear()} 年 ${month.getMonth() + 1} 月`;
+      const byDay = {};
+      orders.forEach((o) => (byDay[dayKey(new Date(o.meet_at))] ||= []).push(o));
+
+      const cal = $('cal');
+      cal.innerHTML = '';
+      '日一二三四五六'.split('').forEach((d) => cal.append(el('div', { className: 'dow', textContent: d })));
+
+      const first = new Date(month.getFullYear(), month.getMonth(), 1);
+      const cursor = new Date(first);
+      cursor.setDate(1 - first.getDay());
+      const todayKey = dayKey(new Date());
+
+      for (let i = 0; i < 42; i++) {
+        const key = dayKey(cursor);
+        const inMonth = cursor.getMonth() === month.getMonth();
+        const list = inMonth ? byDay[key] || [] : [];
+        const btn = el('button', {
+          className: 'day' + (inMonth ? '' : ' other') + (key === todayKey ? ' today' : '') +
+            (list.length ? ' has' : '') + (key === selected ? ' selected' : ''),
+          type: 'button',
+        }, el('span', { className: 'd', textContent: cursor.getDate() }));
+        if (list.length) {
+          btn.append(el('span', { className: 'n', textContent: `${list.length} 單` }),
+                     el('span', { className: 'sum', textContent: money(list.reduce((s, o) => s + o.budget, 0)) }));
+        }
+        btn.setAttribute('aria-label', `${cursor.getMonth() + 1} 月 ${cursor.getDate()} 日，${list.length} 筆訂單`);
+        const clickDate = new Date(cursor);
+        btn.addEventListener('click', () => {
+          if (!inMonth) {
+            month = new Date(clickDate.getFullYear(), clickDate.getMonth(), 1);
+            selected = dayKey(clickDate);
+            openId = null;
+            loadMonth();
+            return;
+          }
+          selected = key;
+          openId = null;
+          renderCalendar();
+          renderDay();
+        });
+        cal.append(btn);
+        cursor.setDate(cursor.getDate() + 1);
+        // 整週結束且已跨到下個月就停，避免多出一整排空白週
+        if ((i + 1) % 7 === 0 && i >= 27 && cursor.getMonth() !== month.getMonth()) break;
+      }
+    }
+
+    function renderDay() {
+      const [y, m, d] = selected.split('-').map(Number);
+      const date = new Date(y, m - 1, d);
+      const list = orders.filter((o) => dayKey(new Date(o.meet_at)) === selected);
+      $('day-title').textContent = date.toLocaleDateString('zh-TW', { month: 'long', day: 'numeric', weekday: 'long' });
+      $('day-sub').textContent = list.length
+        ? `${list.length} 筆訂單・預算合計 ${money(list.reduce((s, o) => s + o.budget, 0))}`
+        : '';
+
+      const box = $('day-list');
+      box.innerHTML = '';
+      if (!list.length) {
+        box.append(el('p', { className: 'empty', textContent: '這天沒有訂單' }));
+        return;
+      }
+      list.forEach((o) => box.append(renderOrder(o)));
+    }
+
+    function renderOrder(o) {
+      const at = new Date(o.meet_at);
+      const wrap = el('article', { className: 'order' });
+      const sum = el('button', { className: 'order-sum', type: 'button' },
+        el('span', { className: 'time', textContent: hm(at) }),
+        el('span', { className: 'name', textContent: o.customer_name }),
+        el('span', { className: `badge s-${o.status}`, textContent: o.status }),
+        el('span', { className: 'brief', textContent: `${money(o.budget)}・${o.meet_location}` }),
+      );
+      sum.setAttribute('aria-expanded', openId === o.id);
+      sum.addEventListener('click', () => {
+        openId = openId === o.id ? null : o.id;
+        renderDay();
+      });
+      wrap.append(sum);
+      if (openId === o.id) wrap.append(renderDetail(o, at));
+      return wrap;
+    }
+
+    function renderDetail(o, at) {
+      const detail = el('div', { className: 'detail' });
+
+      if (o.image_path) {
+        const img = el('img', { className: 'img', alt: `${o.customer_name} 的參考圖片` });
+        db.storage.from(BUCKET).createSignedUrl(o.image_path, 3600).then(({ data }) => {
+          if (data) img.src = data.signedUrl;
+        });
+        detail.append(el('a', { href: '#', onclick: (e) => { e.preventDefault(); img.src && window.open(img.src, '_blank'); } }, img));
+      }
+
+      const dl = el('dl');
+      const row = (k, v) => dl.append(el('dt', { textContent: k }), el('dd', {}, v));
+      row('電話', el('a', { href: `tel:${o.phone}`, textContent: o.phone }));
+      row('面交', `${at.toLocaleDateString('zh-TW')} ${hm(at)}`);
+      row('地點', o.meet_location);
+      row('預算', money(o.budget));
+      row('風格', o.style_note || '（未填寫）');
+      row('下單', new Date(o.created_at).toLocaleString('zh-TW'));
+      detail.append(dl);
+
+      const select = el('select', { id: `status-${o.id}` });
+      STATUSES.forEach((s) => select.add(new Option(s, s, false, s === o.status)));
+      const saved = el('span', { className: 'saved' });
+      select.addEventListener('change', () => updateStatus(o.id, select.value, saved));
+      detail.append(el('div', { className: 'status-row' },
+        el('label', { htmlFor: select.id, textContent: '狀態' }), select, saved));
+      return detail;
+    }
+
+    /* ---------- 月份切換 ---------- */
+    $('prev').addEventListener('click', () => { month.setMonth(month.getMonth() - 1); openId = null; loadMonth(); });
+    $('next').addEventListener('click', () => { month.setMonth(month.getMonth() + 1); openId = null; loadMonth(); });
+    $('today').addEventListener('click', () => {
+      month = new Date();
+      month.setDate(1);
+      selected = dayKey(new Date());
+      openId = null;
+      loadMonth();
+    });
+
+    /* ---------- 啟動 ---------- */
+    db.auth.getSession().then(({ data }) => showScreen(data.session));
+  </script>
+</body>
+</html>
