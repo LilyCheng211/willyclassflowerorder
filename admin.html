@@ -357,6 +357,10 @@
         return;
       }
       orders = data;
+      // 切換月份後，右側面板改顯示本月第一個有訂單的日子（沒有就顯示 1 號）
+      if (!selected.startsWith(`${month.getFullYear()}-${pad(month.getMonth() + 1)}-`)) {
+        selected = orders.length ? dayKey(new Date(orders[0].meet_at)) : dayKey(month);
+      }
       renderStats();
       renderCalendar();
       renderDay();
